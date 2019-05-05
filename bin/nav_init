@@ -12,7 +12,7 @@ if [ ! -e "$HOME/.navcoin4/navcoin.conf" ]; then
     cat <<EOF > $HOME/.navcoin4/navcoin.conf
 rpcuser=${RPCUSER:-username}
 rpcpassword=${RPCPASSWORD:-stakebox}
-rpcallowip=127.0.0.1
+#rpcallowip=127.0.0.1
 rpcbind=0.0.0.0
 onlynet=ipv4 
 rpcport=44444

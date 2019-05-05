@@ -2,6 +2,20 @@ FROM php:5.6-apache
 
 ARG USER_ID
 ARG GROUP_ID
+ARG NAVCOIND_VER
+
+ARG NAVCOIND_PLATFORM
+
+
+ENV NAVCOIND_VER=${NAVCOIND_VER:-4.5.2}
+ENV NAVCOIND_PLATFORM=${NAVCOIND_PLATFORM:-arm-linux-gnueabihf}
+ENV UI_FOLDER="/home/stakebox/"
+
+
+
+RUN echo "Identified Navcoind platform: $NAVCOIND_PLATFORM"
+
+
 
 # Add user with specified (or default) user/group ids
 ENV USER_ID=${USER_ID:-1000}
@@ -22,17 +36,20 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
       && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
 
 RUN cd /tmp && \
-    wget https://github.com/NAVCoin/navcoin-core/releases/download/4.5.2/navcoin-4.5.2-arm-linux-gnueabihf.tar.gz && \
+    wget -q https://github.com/NAVCoin/navcoin-core/releases/download/${NAVCOIND_VER}/navcoin-${NAVCOIND_VER}-${NAVCOIND_PLATFORM}.tar.gz && \
     tar xvzf navcoin-4.5.2-arm-linux-gnueabihf.tar.gz -C /navcoin && \
     rm -rf /tmp/*
 	
 # Install Stakebox UI
-RUN export UI_FOLDER="/home/stakebox/" && mkdir -p $UI_FOLDER && cd $UI_FOLDER \
+RUN  mkdir -p $UI_FOLDER && cd $UI_FOLDER \
      && git clone https://github.com/NAVCoin/navpi.git UI \
      && cd UI && rm -fr .git .htaccess .htaccess.swp \
      && chown navcoin:navcoin $UI_FOLDER \
      && chown -R www-data:www-data $UI_FOLDER/UI
-
+	 
+# Patch the password file to take passwords from session, not cookie
+COPY ./pass.ph_ $UI_FOLDER/UI/pass.php
+RUN echo $UI_FOLDER
 
 # Copy files
 ADD ./conf/apache2.conf /etc/apache2/
